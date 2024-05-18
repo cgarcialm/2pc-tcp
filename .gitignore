@@ -35,3 +35,6 @@
 *.app
 participant
 coordinator
+
+# Other
+*.zip
