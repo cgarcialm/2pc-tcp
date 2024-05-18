@@ -4,14 +4,12 @@ using namespace std;
 
 
 class Coordinator : public TCPClient {
+
+
 public: 
-    enum messageType {
-        VOTEREQUEST,
-        VOTECOMMIT,
-        VOTEABORT,
-        GLOBALCOMMIT,
-        GLOBALABORT,
-        ACK
+    struct Transaction {
+        int account;
+        double amount;
     };
 
     explicit Coordinator(
@@ -23,9 +21,9 @@ public:
             logToFile(connectMsg, logFile);
         }
 
-    void send_message(const messageType &request) {
-        send_request(message_to_string(request));
-        string sendMsg = "Sent to participant: '" + message_to_string(request) + "'";
+    void send_message(const Transaction &request) {
+        send_request(message_to_string(VOTEREQUEST));
+        string sendMsg = "Sent to participant: '" + message_to_string(VOTEREQUEST) + "'";
         cout << sendMsg << endl;
         logToFile(sendMsg, logFile);
 
@@ -37,6 +35,15 @@ public:
 
 private:
     std::string logFile;
+
+    enum messageType {
+        VOTEREQUEST,
+        VOTECOMMIT,
+        VOTEABORT,
+        GLOBALCOMMIT,
+        GLOBALABORT,
+        ACK
+    };
 
     // Helper function to convert enum to string
     std::string message_to_string(messageType msg) {
@@ -50,6 +57,7 @@ private:
             default: return "UNKNOWN";
         }
     }
+
 };
 
 int main(int argc, char *argv[]) {
@@ -66,7 +74,10 @@ int main(int argc, char *argv[]) {
     }
 
     Coordinator coordinator(argv[1], (u_short) port, logFile);
-    coordinator.send_message(Coordinator::VOTEREQUEST);
+    
+    // Request transaction
+    Coordinator::Transaction t {1000, 10.01};
+    coordinator.send_message(t);
     
     return EXIT_SUCCESS;
 }
