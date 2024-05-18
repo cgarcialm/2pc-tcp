@@ -5,6 +5,15 @@ using namespace std;
 
 class Coordinator : public TCPClient {
 public: 
+    enum messageType {
+        VOTEREQUEST,
+        VOTECOMMIT,
+        VOTEABORT,
+        GLOBALCOMMIT,
+        GLOBALABORT,
+        ACK
+    };
+
     explicit Coordinator(
         const std::string &server_host, u_short listening_port, const std::string &logfile
         ) 
@@ -14,9 +23,9 @@ public:
             logToFile(connectMsg, logFile);
         }
 
-    void send_message(const string &request) {
-        send_request(request);
-        string sendMsg = "Sent to participant: '" + string(request) + "'";
+    void send_message(const messageType &request) {
+        send_request(message_to_string(request));
+        string sendMsg = "Sent to participant: '" + message_to_string(request) + "'";
         cout << sendMsg << endl;
         logToFile(sendMsg, logFile);
 
@@ -28,6 +37,19 @@ public:
 
 private:
     std::string logFile;
+
+    // Helper function to convert enum to string
+    std::string message_to_string(messageType msg) {
+        switch (msg) {
+            case VOTEREQUEST: return "VOTEREQUEST";
+            case VOTECOMMIT: return "VOTECOMMIT";
+            case VOTEABORT: return "VOTEABORT";
+            case GLOBALCOMMIT: return "GLOBALCOMMIT";
+            case GLOBALABORT: return "GLOBALABORT";
+            case ACK: return "ACK";
+            default: return "UNKNOWN";
+        }
+    }
 };
 
 int main(int argc, char *argv[]) {
@@ -44,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
     Coordinator coordinator(argv[1], (u_short) port, logFile);
-    coordinator.send_message(argv[3]);
+    coordinator.send_message(Coordinator::VOTEREQUEST);
     
     return EXIT_SUCCESS;
 }
