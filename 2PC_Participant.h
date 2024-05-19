@@ -13,9 +13,9 @@ using namespace std;
 class Participant : public TCPServer {
     public:
         explicit Participant(
-            u_short listening_port, 
-            const std::string &logfile,
-            const std::string &accfile) 
+            u_short listening_port,
+            const std::string &accfile, 
+            const std::string &logfile) 
             : 
             TCPServer(listening_port), 
             partLogger(LOG_FILE_PATH + logfile),

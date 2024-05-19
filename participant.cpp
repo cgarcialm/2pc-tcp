@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         cerr << "invalid serve_port " << serve_port << endl;
         return EXIT_FAILURE;
     }
-    Participant participant((u_short) serve_port, argv[3], argv[2]);
+    Participant participant((u_short) serve_port, argv[2], argv[3]);
     ostringstream note;
     note << "Transaction service on port " << serve_port << " (Ctrl-C to stop)";
     participant.log(note.str());
