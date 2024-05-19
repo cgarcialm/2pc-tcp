@@ -22,33 +22,35 @@ class Participant : public TCPServer {
                 logFile = LOG_FILE_PATH + logfile;
                 accFile = ACC_FILE_PATH + accfile;
                 accounts = readAccounts(accFile);
+
+                string logMsg = "Transaction service on port " + to_string(listening_port) + " (Ctrl-C to stop)";
+                cout << logMsg << endl;
+                logToFile(logMsg, logFile);
             }
 
     protected:
         void start_client(const std::string &their_host, u_short their_port) override {
-            string logMsg = "Accepted connection from " + their_host + ":" + to_string(their_port);
+            string logMsg = "Accepting coordinator connection. State: " + state_to_string(state);
             cout << logMsg << endl;
             logToFile(logMsg, logFile);
         }
 
     bool process(const std::string &request) override {
+        string logMsg;
         if (request.empty()) {
             return false;
         }
 
-        string logMsg = "Received request: '" + request + "'";
-        cout << logMsg << endl;
-        logToFile(logMsg, logFile);
-
         vector<string> tokens = parse_request(request);
         string command = tokens[0];
-        logMsg = "Command: '" + command + "'";
-        cout << logMsg << endl;
 
         string response;
         switch (state) {
             case INIT:
-                if (command == "VOTE-REQUEST") {
+                if (command == message_type_to_string(VOTEREQUEST)) {
+                    logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
+                    cout << logMsg << endl;
+                    logToFile(logMsg, logFile);
                     bool approve = is_transaction_valid(tokens[1], stod(tokens[2])); 
                     if (approve) {
                         response = message_type_to_string(VOTECOMMIT);
@@ -57,20 +59,30 @@ class Participant : public TCPServer {
                         response = message_type_to_string(VOTEABORT);
                         state = ABORT;
                     }
+                    logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
+                    cout << logMsg << endl;
+                    logToFile(logMsg, logFile);
                 }
                 break;
             case READY:
-                if (command == "GLOBAL-ABORT") {
+                if (command == message_type_to_string(GLOBALABORT)) {
                     response = message_type_to_string(ACK);
                     state = ABORT;
-                } else if (command == "GLOBAL-COMMIT") {
+                } else if (command == message_type_to_string(GLOBALCOMMIT)) {
                     response = message_type_to_string(ACK);
                     state = COMMIT;
                 }
+                logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
+                cout << logMsg << endl;
+                logToFile(logMsg, logFile);
                 break;
             case COMMIT:
                 response = message_type_to_string(ACK);
                 state = DONE;
+
+                logMsg = "Commiting transaction.";
+                cout << logMsg << endl;
+                logToFile(logMsg, logFile);
                 break;
             case ABORT:
                 response = message_type_to_string(ACK);
@@ -79,12 +91,8 @@ class Participant : public TCPServer {
             case DONE:
                 return false; // Close the connection
         }
-
+        
         respond(response);
-
-        logMsg = "Sent response: '" + response + "'";
-        cout << logMsg << endl;
-        logToFile(logMsg, logFile);
 
         if (state == DONE) {
             logMsg = "Closing server connection...";
@@ -108,7 +116,7 @@ class Participant : public TCPServer {
             ifstream file(accFile);
 
             if (!file.is_open()) {
-                cerr << "Unable to open file: " << filename << endl;
+                cerr << "Unable to open account file: " << filename << endl;
                 return accounts;
             }
 
@@ -138,6 +146,17 @@ class Participant : public TCPServer {
         };
 
         State state;
+
+        std::string state_to_string(State state) {
+            switch (state) {
+                case INIT: return "INIT";
+                case READY: return "READY";
+                case COMMIT: return "COMMIT";
+                case ABORT: return "ABORT";
+                case DONE: return "DONE";
+                default: return "UNKNOWN";
+            }
+        }
 
         vector<string> parse_request(const string &request) {
             vector<string> tokens;
