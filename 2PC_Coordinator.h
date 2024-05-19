@@ -107,6 +107,16 @@ class Coordinator {
         string logFile;
         Log coordLogger;
 
+        enum State {
+            INIT,
+            WAIT,
+            COMMIT,
+            ABORT,
+            DONE
+        };
+
+        State state;
+
         void connect_to_participant(const string &host, u_short port) {
             try {
                 client1 = make_unique<TCPClient>(host, port);
@@ -128,16 +138,5 @@ class Coordinator {
 
             return msg;
         }
-
-        enum State {
-            INIT,
-            WAIT,
-            COMMIT,
-            ABORT,
-            DONE
-        };
-
-        State state;
-
 };
 
