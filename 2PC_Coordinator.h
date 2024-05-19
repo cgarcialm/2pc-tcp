@@ -5,6 +5,8 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <memory>
+#include <stdexcept>
 
 using namespace std;
 
@@ -29,18 +31,16 @@ class Coordinator {
             const string &logfile,
             const string &server_host_one, u_short listening_port_one,
             const string &server_host_two, u_short listening_port_two
-            ) : client1(server_host_one, listening_port_one),
-                client2(server_host_two, listening_port_two),
-                coordLogger(LOG_FILE_PATH + logfile),
+            ) : coordLogger(LOG_FILE_PATH + logfile),
                 state(INIT) {
-
-                // Logging the connections
-                string connectMsg = "Connected to " + server_host_one + ":" + to_string(listening_port_one);
-                log(connectMsg);
-
-                connectMsg = "Connected to " + server_host_two + ":" + to_string(listening_port_two);
-                log(connectMsg);
-            }
+                
+                try {
+                    connect_to_participant(server_host_one, listening_port_one);
+                    connect_to_participant(server_host_two, listening_port_two);
+                } catch (const exception &e) {
+                    throw; 
+                }
+        }
 
         void perform_transaction(const Transaction &request) {
             string msg1 = prepare_message(VOTEREQUEST, request.accFrom, request.amount);
@@ -48,8 +48,8 @@ class Coordinator {
             state = WAIT;
 
             while (state != DONE) {
-                string rcvMsg1 = send_message(client1, msg1);
-                string rcvMsg2 = send_message(client2, msg2);
+                string rcvMsg1 = send_message(*client1, msg1);
+                string rcvMsg2 = send_message(*client2, msg2);
                 switch (state) {
                     case WAIT:
                         if (rcvMsg1 == message_type_to_string(VOTECOMMIT) 
@@ -101,11 +101,25 @@ class Coordinator {
         }
 
     private:
-        TCPClient client1;
-        TCPClient client2;
+        unique_ptr<TCPClient> client1;
+        unique_ptr<TCPClient> client2;
         const string LOG_FILE_PATH = "logs/";
         string logFile;
         Log coordLogger;
+
+        void connect_to_participant(const string &host, u_short port) {
+            try {
+                client1 = make_unique<TCPClient>(host, port);
+
+                // Logging the connections
+                string connectMsg = "Connected to " + host + ":" + to_string(port);
+                log(connectMsg);
+            } catch (const exception &e) {
+                string errorMsg = "Exception during connection initialization to " + host + ":" + to_string(port) + " - " + string(e.what());
+                log(errorMsg);
+                throw runtime_error(errorMsg); // Re-throw with detailed error message
+            }
+        }
 
         string prepare_message(const messageType msgType, const string &acc, const double &amount) 
         {
