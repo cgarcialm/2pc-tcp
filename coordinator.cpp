@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Coordinator::Transaction t {atoi(argv[1]), atof(argv[4])};
+    Coordinator::Transaction t {argv[4], argv[7], atof(argv[1])};
     string host1 = argv[2];
     int port1 = process_port(argv[3]);
     string host2 = argv[5];

@@ -7,7 +7,8 @@ using namespace std;
 class Coordinator {
     public: 
         struct Transaction {
-            int account;
+            string accFrom;
+            string accTo;
             double amount;
         };
 
@@ -92,7 +93,7 @@ class Coordinator {
         string prepare_message(const messageType msgType, const Transaction &t) 
         {
             string msg = message_type_to_string(msgType) + ":";
-            msg += to_string(t.account) + ":" + to_string(t.amount);
+            msg += t.accFrom + ":" + t.accTo + ":" + to_string(t.amount);
 
             return msg;
         }
