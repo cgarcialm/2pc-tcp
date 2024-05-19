@@ -48,11 +48,11 @@ class Coordinator : public TCPClient {
         // Helper function to convert enum to string
         std::string message_type_to_string(messageType msg) {
             switch (msg) {
-                case VOTEREQUEST: return "VOTEREQUEST";
-                case VOTECOMMIT: return "VOTECOMMIT";
-                case VOTEABORT: return "VOTEABORT";
-                case GLOBALCOMMIT: return "GLOBALCOMMIT";
-                case GLOBALABORT: return "GLOBALABORT";
+                case VOTEREQUEST: return "VOTE-REQUEST";
+                case VOTECOMMIT: return "VOTE-COMMIT";
+                case VOTEABORT: return "VOTE-ABORT";
+                case GLOBALCOMMIT: return "GLOBAL-COMMIT";
+                case GLOBALABORT: return "GLOBAL-ABORT";
                 case ACK: return "ACK";
                 default: return "UNKNOWN";
             }
