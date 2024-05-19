@@ -14,19 +14,42 @@ class Coordinator : public TCPClient {
         explicit Coordinator(
             const std::string &server_host, u_short listening_port, const std::string &logfile
             ) 
-            : TCPClient (server_host, listening_port), logFile(logfile) {
+            : TCPClient (server_host, listening_port), state(INIT) {
                 string connectMsg = "Connected to " + server_host + ":" + to_string(listening_port);
                 cout << connectMsg << endl;
-                logFile = LOG_FILE_PATH + logfile;;
+                logFile = LOG_FILE_PATH + logfile;
             }
 
         void perform_transaction(const Transaction &request) {
             string msg = prepare_message(VOTEREQUEST, request);
-            string rcvMsg = send_message(msg);
-            if (rcvMsg == message_type_to_string(VOTECOMMIT)) {
-                send_message(message_type_to_string(GLOBALCOMMIT));
-            } else {
-                send_message(message_type_to_string(GLOBALABORT));
+            state = WAIT;
+
+            while (state != DONE) {
+                string rcvMsg = send_message(msg);
+                switch (state) {
+                    case WAIT:
+                        if (rcvMsg == message_type_to_string(VOTECOMMIT)) {
+                            msg = message_type_to_string(GLOBALCOMMIT);
+                            state = COMMIT;
+                        } else if (rcvMsg == message_type_to_string(VOTEABORT)) {
+                            msg = message_type_to_string(GLOBALABORT);
+                            state = ABORT;
+                        }
+                        break;
+                    case COMMIT:
+                        if (rcvMsg == message_type_to_string(ACK)) {
+                            state = DONE;
+                        }
+                        break;
+                    case ABORT:
+                        if (rcvMsg == message_type_to_string(ACK)) {
+                            state = DONE;
+                        }
+                        break;
+                    case INIT:
+                    case DONE:
+                        break;
+                }
             }
         }
 
@@ -41,7 +64,7 @@ class Coordinator : public TCPClient {
             cout << receiveMsg << endl;
             logToFile(receiveMsg, logFile);
 
-            return receiveMsg;
+            return response;
         }
 
     private:
@@ -55,6 +78,16 @@ class Coordinator : public TCPClient {
 
             return msg;
         }
+
+        enum State {
+            INIT,
+            WAIT,
+            COMMIT,
+            ABORT,
+            DONE
+        };
+
+        State state;
 
 };
 
