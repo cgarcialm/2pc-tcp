@@ -18,21 +18,20 @@ class Participant : public TCPServer {
             const std::string &accfile) 
             : 
             TCPServer(listening_port), 
+            partLogger(LOG_FILE_PATH + logfile),
             state(INIT) {
-                logFile = LOG_FILE_PATH + logfile;
                 accFile = ACC_FILE_PATH + accfile;
                 accounts = readAccounts(accFile);
-
-                string logMsg = "Transaction service on port " + to_string(listening_port) + " (Ctrl-C to stop)";
-                cout << logMsg << endl;
-                logToFile(logMsg, logFile);
             }
+
+        void log(const string &msg) {
+            partLogger.log(msg);
+        }
 
     protected:
         void start_client(const std::string &their_host, u_short their_port) override {
             string logMsg = "Accepting coordinator connection. State: " + state_to_string(state);
-            cout << logMsg << endl;
-            logToFile(logMsg, logFile);
+            log(logMsg);
         }
 
     bool process(const std::string &request) override {
@@ -53,15 +52,13 @@ class Participant : public TCPServer {
                         response = message_type_to_string(VOTECOMMIT);
                         state = READY;
                         logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
-                        cout << logMsg << endl;
-                        logToFile(logMsg, logFile);
+                        log(logMsg);
                     } else {
                         response = message_type_to_string(VOTEABORT);
                         state = ABORT;
                     }
                     logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
-                    cout << logMsg << endl;
-                    logToFile(logMsg, logFile);
+                    log(logMsg);
                 }
                 break;
             case READY:
@@ -73,16 +70,14 @@ class Participant : public TCPServer {
                     state = COMMIT;
                 }
                 logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
-                cout << logMsg << endl;
-                logToFile(logMsg, logFile);
+                log(logMsg);
                 break;
             case COMMIT:
                 response = message_type_to_string(ACK);
                 state = DONE;
 
                 logMsg = "Commiting transaction.";
-                cout << logMsg << endl;
-                logToFile(logMsg, logFile);
+                log(logMsg);
                 break;
             case ABORT:
                 response = message_type_to_string(ACK);
@@ -106,6 +101,7 @@ class Participant : public TCPServer {
         std::string logFile;
         const std::string ACC_FILE_PATH = "accounts/";
         std::string accFile;
+        Log partLogger;
         unordered_map<string, double> accounts;
 
         unordered_map<string, double> readAccounts(const string &filename) {

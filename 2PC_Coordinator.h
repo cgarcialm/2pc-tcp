@@ -31,17 +31,15 @@ class Coordinator {
             const string &server_host_two, u_short listening_port_two
             ) : client1(server_host_one, listening_port_one),
                 client2(server_host_two, listening_port_two),
+                coordLogger(LOG_FILE_PATH + logfile),
                 state(INIT) {
-                logFile = LOG_FILE_PATH + logfile;
 
                 // Logging the connections
                 string connectMsg = "Connected to " + server_host_one + ":" + to_string(listening_port_one);
-                cout << connectMsg << endl;
-                logToFile(connectMsg, logFile);
+                log(connectMsg);
 
                 connectMsg = "Connected to " + server_host_two + ":" + to_string(listening_port_two);
-                cout << connectMsg << endl;
-                logToFile(connectMsg, logFile);
+                log(connectMsg);
             }
 
         void perform_transaction(const Transaction &request) {
@@ -89,22 +87,25 @@ class Coordinator {
         string send_message(TCPClient &client, const string &msg) {
             client.send_request(msg);
             string sendMsg = "Sent to participant: '" + msg + "'";
-            cout << sendMsg << endl;
-            logToFile(sendMsg, logFile);
+            log(sendMsg);
 
             string response = client.get_response();
             string receiveMsg = "Received from participant: '" + response + "'";
-            cout << receiveMsg << endl;
-            logToFile(receiveMsg, logFile);
+            log(receiveMsg);
 
             return response;
         }
 
+        void log(const string &msg) {
+            coordLogger.log(msg);
+        }
+
     private:
-        string logFile;
-        const string LOG_FILE_PATH = "logs/";
         TCPClient client1;
         TCPClient client2;
+        const string LOG_FILE_PATH = "logs/";
+        string logFile;
+        Log coordLogger;
 
         string prepare_message(const messageType msgType, const string &acc, const double &amount) 
         {

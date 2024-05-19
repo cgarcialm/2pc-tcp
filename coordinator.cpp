@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
     }
 
     Coordinator::Transaction t {argv[4], argv[7], atof(argv[1])};
-    cout << t.to_string();
 
     string host1 = argv[2];
     int port1 = process_port(argv[3]);
@@ -31,6 +30,7 @@ int main(int argc, char *argv[]) {
         host1, (u_short) port1, 
         host2, (u_short) port2
     );
+    coordinator.log(t.to_string());
     coordinator.perform_transaction(t);
     
     return EXIT_SUCCESS;
