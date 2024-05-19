@@ -38,3 +38,6 @@ coordinator
 
 # Other
 *.zip
+
+# IDEs
+.vscode
