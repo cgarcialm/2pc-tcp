@@ -4,17 +4,18 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        cerr << "usage: participant port logfile" << endl;
+        cerr << "usage: participant serve_port accounts_filename log_filename" << endl;
         return EXIT_FAILURE;
     }
-    int port = atoi(argv[1]);
-    if (port < 1 || port >= 1 << 16) {
-        cerr << "invalid port " << port << endl;
+    int serve_port = atoi(argv[1]);
+    if (serve_port < 1 || serve_port >= 1 << 16) {
+        cerr << "invalid serve_port " << serve_port << endl;
         return EXIT_FAILURE;
     }
-    string logFile = argv[2];
-    string accFile = argv[3];
-    Participant participant((u_short) port, logFile, accFile);
+    Participant participant((u_short) serve_port, argv[3], argv[2]);
+    ostringstream note;
+    note << "Transaction service on port " << serve_port << " (Ctrl-C to stop)";
+    participant.log(note.str());
     participant.serve();
     return EXIT_SUCCESS;
 }
