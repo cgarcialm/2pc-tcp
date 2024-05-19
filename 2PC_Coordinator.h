@@ -23,6 +23,11 @@ class Coordinator : public TCPClient {
         void perform_transaction(const Transaction &request) {
             string msg = prepare_message(VOTEREQUEST, request);
             string rcvMsg = send_message(msg);
+            if (rcvMsg == message_type_to_string(VOTECOMMIT)) {
+                send_message(message_type_to_string(GLOBALCOMMIT));
+            } else {
+                send_message(message_type_to_string(GLOBALABORT));
+            }
         }
 
         string send_message(const string &msg) {
