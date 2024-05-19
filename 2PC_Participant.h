@@ -149,7 +149,12 @@ class Participant : public TCPServer {
             return tokens;
         }
 
-        bool is_transaction_valid(string &acc, double amount) {
-            return accounts[acc] > amount;
+        bool is_transaction_valid(const string &acc, double amount) {
+            auto it = accounts.find(acc);
+            if (it != accounts.end()) {
+                return it->second > amount;
+            } else {
+                return false; // Account not found
+            }
         }
 };
