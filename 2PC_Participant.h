@@ -1,6 +1,7 @@
 #include "TCPServer.h"
 #include "Log.h"
-#include <iostream>
+#include "MessageTypes.h"
+
 #include <cstdlib>
 
 using namespace std;
@@ -24,9 +25,7 @@ class Participant : public TCPServer {
             cout << logMsg << endl;
             logToFile(logMsg, logFile);
 
-            string response(request);
-            for (u_long i = 0, j = response.length() - 1; i <= j; i++, j--)
-                swap(response[i], response[j]);
+            string response = message_type_to_string(VOTECOMMIT);
             respond(response);
 
             logMsg = "Sent reversed response: '" + response + "'";

@@ -20,9 +20,12 @@ class Coordinator : public TCPClient {
                 logFile = LOG_FILE_PATH + logfile;;
             }
 
-        void send_message(const Transaction &request) {
+        void perform_transaction(const Transaction &request) {
             string msg = prepare_message(VOTEREQUEST, request);
-            
+            send_message(msg);
+        }
+
+        void send_message(const string &msg) {
             send_request(msg);
             string sendMsg = "Sent to participant: '" + msg + "'";
             cout << sendMsg << endl;

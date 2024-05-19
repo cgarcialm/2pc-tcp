@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     
     // Request transaction
     Coordinator::Transaction t {1000, 10.01};
-    coordinator.send_message(t);
+    coordinator.perform_transaction(t);
     
     return EXIT_SUCCESS;
 }
