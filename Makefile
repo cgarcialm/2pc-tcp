@@ -10,10 +10,10 @@ p2 = participant coordinator
 p2 : $(p2)
 
 # Build rules for each executable
-participant : TCPServer.o participant.o Log.o
+participant : TCPServer.o participant.o
 	g++ -lpthread $^ -o $@
 
-coordinator : TCPClient.o coordinator.o Log.o
+coordinator : TCPClient.o coordinator.o
 	g++ -lpthread $^ -o $@
 
 # Clean rule to remove object files and executables
