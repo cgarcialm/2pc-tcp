@@ -23,11 +23,8 @@ int main(int argc, char *argv[]) {
     int portOne = process_port(argv[2]);
     int portTwo = process_port(argv[4]);
 
-    Coordinator coordinatorOne(argv[1], (u_short) portOne, logFile);
-    coordinatorOne.perform_transaction(t);
-
-    Coordinator coordinatorTwo(argv[1], (u_short) portTwo, logFile);
-    coordinatorTwo.perform_transaction(t);
+    Coordinator coordinator(logFile, argv[1], (u_short) portOne, argv[1], (u_short) portTwo);
+    coordinator.perform_transaction(t);
     
     return EXIT_SUCCESS;
 }

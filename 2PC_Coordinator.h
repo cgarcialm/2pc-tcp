@@ -4,7 +4,7 @@
 
 using namespace std;
 
-class Coordinator : public TCPClient {
+class Coordinator {
     public: 
         struct Transaction {
             int account;
@@ -12,10 +12,13 @@ class Coordinator : public TCPClient {
         };
 
         explicit Coordinator(
-            const std::string &server_host, u_short listening_port, const std::string &logfile
-            ) 
-            : TCPClient (server_host, listening_port), state(INIT) {
-                string connectMsg = "Connected to " + server_host + ":" + to_string(listening_port);
+            const std::string &logfile,
+            const std::string &server_host_one, u_short listening_port_one,
+            const std::string &server_host_two, u_short listening_port_two
+            ) : client1(server_host_one, listening_port_one),
+                client2(server_host_two, listening_port_two),
+                state(INIT) {
+                string connectMsg = "Connected to " + server_host_one + ":" + to_string(listening_port_one);
                 cout << connectMsg << endl;
                 logFile = LOG_FILE_PATH + logfile;
             }
@@ -25,24 +28,30 @@ class Coordinator : public TCPClient {
             state = WAIT;
 
             while (state != DONE) {
-                string rcvMsg = send_message(msg);
+                string rcvMsg1 = send_message(client1, msg);
+                string rcvMsg2 = send_message(client2, msg);
                 switch (state) {
                     case WAIT:
-                        if (rcvMsg == message_type_to_string(VOTECOMMIT)) {
+                        if (rcvMsg1 == message_type_to_string(VOTECOMMIT) 
+                        && rcvMsg2 == message_type_to_string(VOTECOMMIT)) {
                             msg = message_type_to_string(GLOBALCOMMIT);
                             state = COMMIT;
-                        } else if (rcvMsg == message_type_to_string(VOTEABORT)) {
+                        } else {
                             msg = message_type_to_string(GLOBALABORT);
                             state = ABORT;
                         }
                         break;
                     case COMMIT:
-                        if (rcvMsg == message_type_to_string(ACK)) {
+                        if (rcvMsg1 == message_type_to_string(ACK) 
+                        && rcvMsg2 == message_type_to_string(ACK)) {
                             state = DONE;
+                        } else {
+                            state = ABORT;
                         }
                         break;
                     case ABORT:
-                        if (rcvMsg == message_type_to_string(ACK)) {
+                        if (rcvMsg1 == message_type_to_string(ACK) 
+                        && rcvMsg2 == message_type_to_string(ACK)) {
                             state = DONE;
                         }
                         break;
@@ -53,13 +62,13 @@ class Coordinator : public TCPClient {
             }
         }
 
-        string send_message(const string &msg) {
-            send_request(msg);
+        string send_message(TCPClient &client, const string &msg) {
+            client.send_request(msg);
             string sendMsg = "Sent to participant: '" + msg + "'";
             cout << sendMsg << endl;
             logToFile(sendMsg, logFile);
 
-            string response = get_response();
+            string response = client.get_response();
             string receiveMsg = "Received from participant: '" + response + "'";
             cout << receiveMsg << endl;
             logToFile(receiveMsg, logFile);
@@ -70,6 +79,8 @@ class Coordinator : public TCPClient {
     private:
         std::string logFile;
         const std::string LOG_FILE_PATH = "logs/";
+        TCPClient client1;
+        TCPClient client2;
 
         string prepare_message(const messageType msgType, const Transaction &t) 
         {
