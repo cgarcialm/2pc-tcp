@@ -21,7 +21,12 @@ class Participant : public TCPServer {
             partLogger(LOG_FILE_PATH + logfile),
             state(INIT) {
                 accFile = ACC_FILE_PATH + accfile;
-                accounts = readAccounts(accFile);
+                try {
+                    accounts = readAccounts(accFile);
+                } catch (const exception &e) {
+                    log("Exception during account file (" + accFile + ") reading: " + string(e.what()));
+                    throw; // Re-throw to indicate that the initialization failed
+                }
             }
 
         void log(const string &msg) {
@@ -106,11 +111,10 @@ class Participant : public TCPServer {
 
         unordered_map<string, double> readAccounts(const string &filename) {
             unordered_map<string, double> accounts;
-            ifstream file(accFile);
+            ifstream file(filename);
 
             if (!file.is_open()) {
-                cerr << "Unable to open account file: " << filename << endl;
-                return accounts;
+                throw runtime_error("Unable to open account file: " + filename);
             }
 
             string line;
@@ -122,13 +126,14 @@ class Participant : public TCPServer {
                 if (iss >> amount >> account) {
                     accounts[account] = amount;
                 } else {
-                    cerr << "Error processing line: " << line << endl;
+                    throw runtime_error("Error processing line: " + line);
                 }
             }
 
             file.close();
             return accounts;
         }
+
 
         enum State {
             INIT,
