@@ -16,7 +16,7 @@ class Coordinator : public TCPClient {
             : TCPClient (server_host, listening_port), logFile(logfile) {
                 string connectMsg = "Connected to " + server_host + ":" + to_string(listening_port);
                 cout << connectMsg << endl;
-                logToFile(connectMsg, logFile);
+                logFile = LOG_FILE_PATH + logfile;;
             }
 
         void send_message(const Transaction &request) {
@@ -35,6 +35,7 @@ class Coordinator : public TCPClient {
 
     private:
         std::string logFile;
+        const std::string LOG_FILE_PATH = "logs/";
 
         enum messageType {
             VOTEREQUEST,

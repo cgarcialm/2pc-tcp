@@ -8,7 +8,9 @@ using namespace std;
 class Participant : public TCPServer {
     public:
         explicit Participant(u_short listening_port, const std::string &logfile) 
-            : TCPServer(listening_port), logFile(logfile) {}
+            : TCPServer(listening_port) {
+                logFile = LOG_FILE_PATH + logfile;
+            }
 
     protected:
         void start_client(const std::string &their_host, u_short their_port) override {
@@ -40,4 +42,5 @@ class Participant : public TCPServer {
 
     private:
         std::string logFile;
+        const std::string LOG_FILE_PATH = "logs/";
 };
