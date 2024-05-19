@@ -46,7 +46,7 @@ class Coordinator : public TCPClient {
         };
 
         // Helper function to convert enum to string
-        std::string message_to_string(messageType msg) {
+        std::string message_type_to_string(messageType msg) {
             switch (msg) {
                 case VOTEREQUEST: return "VOTEREQUEST";
                 case VOTECOMMIT: return "VOTECOMMIT";
@@ -60,7 +60,7 @@ class Coordinator : public TCPClient {
 
         string prepare_message(const messageType msgType, const Transaction &t) 
         {
-            string msg = message_to_string(msgType) + ":";
+            string msg = message_type_to_string(msgType) + ":";
             msg += to_string(t.account) + ":" + to_string(t.amount);
 
             return msg;
