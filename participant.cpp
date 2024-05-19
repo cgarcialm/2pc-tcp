@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     }
     string logFile = argv[2];
     string accFile = argv[3];
-    Participant server((u_short) port, logFile, accFile);
-    server.serve();
+    Participant participant((u_short) port, logFile, accFile);
+    participant.serve();
     return EXIT_SUCCESS;
 }
