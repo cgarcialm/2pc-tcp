@@ -23,7 +23,7 @@ class Participant : public TCPServer {
             logToFile(logMsg, logFile);
         }
 
-bool process(const std::string &request) override {
+    bool process(const std::string &request) override {
         if (request.empty()) {
             return false;
         }
