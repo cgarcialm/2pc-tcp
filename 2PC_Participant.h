@@ -24,6 +24,10 @@ class Participant : public TCPServer {
         }
 
 bool process(const std::string &request) override {
+        if (request.empty()) {
+            return false;
+        }
+
         string logMsg = "Received request: '" + request + "'";
         cout << logMsg << endl;
         logToFile(logMsg, logFile);
