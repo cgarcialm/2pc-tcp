@@ -22,10 +22,10 @@ class Coordinator : public TCPClient {
 
         void perform_transaction(const Transaction &request) {
             string msg = prepare_message(VOTEREQUEST, request);
-            send_message(msg);
+            string rcvMsg = send_message(msg);
         }
 
-        void send_message(const string &msg) {
+        string send_message(const string &msg) {
             send_request(msg);
             string sendMsg = "Sent to participant: '" + msg + "'";
             cout << sendMsg << endl;
@@ -35,6 +35,8 @@ class Coordinator : public TCPClient {
             string receiveMsg = "Received from participant: '" + response + "'";
             cout << receiveMsg << endl;
             logToFile(receiveMsg, logFile);
+
+            return receiveMsg;
         }
 
     private:
