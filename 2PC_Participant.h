@@ -49,8 +49,7 @@ class Participant : public TCPServer {
         switch (state) {
             case INIT:
                 if (command == "VOTE-REQUEST") {
-                    // TODO: Placeholder condition for approval
-                    bool approve = true; 
+                    bool approve = is_transaction_valid(tokens[1], stod(tokens[2])); 
                     if (approve) {
                         response = message_type_to_string(VOTECOMMIT);
                         state = READY;
@@ -148,5 +147,9 @@ class Participant : public TCPServer {
                 tokens.push_back(token);
             }
             return tokens;
+        }
+
+        bool is_transaction_valid(string &acc, double amount) {
+            return accounts[acc] > amount;
         }
 };

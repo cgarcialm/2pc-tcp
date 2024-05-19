@@ -32,20 +32,23 @@ class Coordinator {
             }
 
         void perform_transaction(const Transaction &request) {
-            string msg = prepare_message(VOTEREQUEST, request);
+            string msg1 = prepare_message(VOTEREQUEST, request.accFrom, request.amount);
+            string msg2 = prepare_message(VOTEREQUEST, request.accTo, -request.amount);
             state = WAIT;
 
             while (state != DONE) {
-                string rcvMsg1 = send_message(client1, msg);
-                string rcvMsg2 = send_message(client2, msg);
+                string rcvMsg1 = send_message(client1, msg1);
+                string rcvMsg2 = send_message(client2, msg2);
                 switch (state) {
                     case WAIT:
                         if (rcvMsg1 == message_type_to_string(VOTECOMMIT) 
                         && rcvMsg2 == message_type_to_string(VOTECOMMIT)) {
-                            msg = message_type_to_string(GLOBALCOMMIT);
+                            msg1 = message_type_to_string(GLOBALCOMMIT);
+                            msg2 = message_type_to_string(GLOBALCOMMIT);
                             state = COMMIT;
                         } else {
-                            msg = message_type_to_string(GLOBALABORT);
+                            msg1 = message_type_to_string(GLOBALABORT);
+                            msg2 = message_type_to_string(GLOBALABORT);
                             state = ABORT;
                         }
                         break;
@@ -90,10 +93,10 @@ class Coordinator {
         TCPClient client1;
         TCPClient client2;
 
-        string prepare_message(const messageType msgType, const Transaction &t) 
+        string prepare_message(const messageType msgType, const string &acc, const double &amount) 
         {
             string msg = message_type_to_string(msgType) + ":";
-            msg += t.accFrom + ":" + t.accTo + ":" + to_string(t.amount);
+            msg += acc + ":" + to_string(amount);
 
             return msg;
         }
