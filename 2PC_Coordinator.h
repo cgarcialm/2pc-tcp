@@ -1,5 +1,6 @@
 #include "TCPClient.h"
 #include "Log.h"
+#include "MessageTypes.h" 
 
 using namespace std;
 
@@ -36,28 +37,6 @@ class Coordinator : public TCPClient {
     private:
         std::string logFile;
         const std::string LOG_FILE_PATH = "logs/";
-
-        enum messageType {
-            VOTEREQUEST,
-            VOTECOMMIT,
-            VOTEABORT,
-            GLOBALCOMMIT,
-            GLOBALABORT,
-            ACK
-        };
-
-        // Helper function to convert enum to string
-        std::string message_type_to_string(messageType msg) {
-            switch (msg) {
-                case VOTEREQUEST: return "VOTE-REQUEST";
-                case VOTECOMMIT: return "VOTE-COMMIT";
-                case VOTEABORT: return "VOTE-ABORT";
-                case GLOBALCOMMIT: return "GLOBAL-COMMIT";
-                case GLOBALABORT: return "GLOBAL-ABORT";
-                case ACK: return "ACK";
-                default: return "UNKNOWN";
-            }
-        }
 
         string prepare_message(const messageType msgType, const Transaction &t) 
         {

@@ -1,5 +1,5 @@
 CPPFLAGS = -std=c++20 -Wall -Werror -pedantic -ggdb -pthread
-HDRS = TCPServer.h TCPClient.h Log.h 2PC_Participant.h 2PC_Coordinator.h
+HDRS = TCPServer.h TCPClient.h Log.h 2PC_Participant.h 2PC_Coordinator.h MessageTypes.h
 p2 = participant coordinator
 
 # Pattern rule for compiling .cpp files to .o files
