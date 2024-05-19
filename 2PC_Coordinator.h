@@ -20,8 +20,10 @@ class Coordinator : public TCPClient {
             }
 
         void send_message(const Transaction &request) {
-            send_request(message_to_string(VOTEREQUEST));
-            string sendMsg = "Sent to participant: '" + message_to_string(VOTEREQUEST) + "'";
+            string msg = prepare_message(VOTEREQUEST, request);
+            
+            send_request(msg);
+            string sendMsg = "Sent to participant: '" + msg + "'";
             cout << sendMsg << endl;
             logToFile(sendMsg, logFile);
 
@@ -54,6 +56,14 @@ class Coordinator : public TCPClient {
                 case ACK: return "ACK";
                 default: return "UNKNOWN";
             }
+        }
+
+        string prepare_message(const messageType msgType, const Transaction &t) 
+        {
+            string msg = message_to_string(msgType) + ":";
+            msg += to_string(t.account) + ":" + to_string(t.amount);
+
+            return msg;
         }
 
 };
