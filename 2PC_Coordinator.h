@@ -2,6 +2,10 @@
 #include "Log.h"
 #include "MessageTypes.h" 
 
+#include <string>
+#include <iomanip>
+#include <sstream>
+
 using namespace std;
 
 class Coordinator {
@@ -10,12 +14,21 @@ class Coordinator {
             string accFrom;
             string accTo;
             double amount;
+
+            string to_string() const {
+                ostringstream oss;
+                oss << fixed << setprecision(2); 
+                oss << "Transaction: $" << amount << endl;
+                oss << "\tFrom: " << accFrom << endl;
+                oss << "\tTo: " << accTo << endl;
+                return oss.str();
+            }
         };
 
         explicit Coordinator(
-            const std::string &logfile,
-            const std::string &server_host_one, u_short listening_port_one,
-            const std::string &server_host_two, u_short listening_port_two
+            const string &logfile,
+            const string &server_host_one, u_short listening_port_one,
+            const string &server_host_two, u_short listening_port_two
             ) : client1(server_host_one, listening_port_one),
                 client2(server_host_two, listening_port_two),
                 state(INIT) {
@@ -88,8 +101,8 @@ class Coordinator {
         }
 
     private:
-        std::string logFile;
-        const std::string LOG_FILE_PATH = "logs/";
+        string logFile;
+        const string LOG_FILE_PATH = "logs/";
         TCPClient client1;
         TCPClient client2;
 

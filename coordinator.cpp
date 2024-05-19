@@ -20,6 +20,8 @@ int main(int argc, char *argv[]) {
     }
 
     Coordinator::Transaction t {argv[4], argv[7], atof(argv[1])};
+    cout << t.to_string();
+
     string host1 = argv[2];
     int port1 = process_port(argv[3]);
     string host2 = argv[5];
