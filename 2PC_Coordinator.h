@@ -18,9 +18,16 @@ class Coordinator {
             ) : client1(server_host_one, listening_port_one),
                 client2(server_host_two, listening_port_two),
                 state(INIT) {
+                logFile = LOG_FILE_PATH + logfile;
+
+                // Logging the connections
                 string connectMsg = "Connected to " + server_host_one + ":" + to_string(listening_port_one);
                 cout << connectMsg << endl;
-                logFile = LOG_FILE_PATH + logfile;
+                logToFile(connectMsg, logFile);
+
+                connectMsg = "Connected to " + server_host_two + ":" + to_string(listening_port_two);
+                cout << connectMsg << endl;
+                logToFile(connectMsg, logFile);
             }
 
         void perform_transaction(const Transaction &request) {
