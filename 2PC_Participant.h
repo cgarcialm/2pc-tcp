@@ -48,13 +48,13 @@ class Participant : public TCPServer {
         switch (state) {
             case INIT:
                 if (command == message_type_to_string(VOTEREQUEST)) {
-                    logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
-                    cout << logMsg << endl;
-                    logToFile(logMsg, logFile);
                     bool approve = is_transaction_valid(tokens[1], stod(tokens[2])); 
                     if (approve) {
                         response = message_type_to_string(VOTECOMMIT);
                         state = READY;
+                        logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
+                        cout << logMsg << endl;
+                        logToFile(logMsg, logFile);
                     } else {
                         response = message_type_to_string(VOTEABORT);
                         state = ABORT;
@@ -95,9 +95,6 @@ class Participant : public TCPServer {
         respond(response);
 
         if (state == DONE) {
-            logMsg = "Closing server connection...";
-            cout << logMsg << endl;
-            logToFile(logMsg, logFile);
             return false; // Close the connection
         }
 
