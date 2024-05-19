@@ -13,7 +13,8 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     string logFile = argv[2];
-    Participant server((u_short) port, logFile);
+    string accFile = argv[3];
+    Participant server((u_short) port, logFile, accFile);
     server.serve();
     return EXIT_SUCCESS;
 }

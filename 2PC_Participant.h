@@ -6,14 +6,22 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
 class Participant : public TCPServer {
     public:
-        explicit Participant(u_short listening_port, const std::string &logfile) 
-            : TCPServer(listening_port), state(INIT) {
+        explicit Participant(
+            u_short listening_port, 
+            const std::string &logfile,
+            const std::string &accfile) 
+            : 
+            TCPServer(listening_port), 
+            state(INIT) {
                 logFile = LOG_FILE_PATH + logfile;
+                accFile = ACC_FILE_PATH + accfile;
+                accounts = readAccounts(accFile);
             }
 
     protected:
@@ -90,26 +98,55 @@ class Participant : public TCPServer {
     }
 
     private:
-        std::string logFile;
         const std::string LOG_FILE_PATH = "logs/";
+        std::string logFile;
+        const std::string ACC_FILE_PATH = "accounts/";
+        std::string accFile;
+        unordered_map<string, double> accounts;
 
-    enum State {
-        INIT,
-        READY,
-        COMMIT,
-        ABORT,
-        DONE
-    };
+        unordered_map<string, double> readAccounts(const string &filename) {
+            unordered_map<string, double> accounts;
+            ifstream file(accFile);
 
-    State state;
+            if (!file.is_open()) {
+                cerr << "Unable to open file: " << filename << endl;
+                return accounts;
+            }
 
-    vector<string> parse_request(const string &request) {
-        vector<string> tokens;
-        string token;
-        istringstream tokenStream(request);
-        while (getline(tokenStream, token, ':')) {
-            tokens.push_back(token);
+            string line;
+            while (getline(file, line)) {
+                istringstream iss(line);
+                double amount;
+                string account;
+
+                if (iss >> amount >> account) {
+                    accounts[account] = amount;
+                } else {
+                    cerr << "Error processing line: " << line << endl;
+                }
+            }
+
+            file.close();
+            return accounts;
         }
-        return tokens;
-    }
+
+        enum State {
+            INIT,
+            READY,
+            COMMIT,
+            ABORT,
+            DONE
+        };
+
+        State state;
+
+        vector<string> parse_request(const string &request) {
+            vector<string> tokens;
+            string token;
+            istringstream tokenStream(request);
+            while (getline(tokenStream, token, ':')) {
+                tokens.push_back(token);
+            }
+            return tokens;
+        }
 };
