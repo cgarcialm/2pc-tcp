@@ -20,7 +20,7 @@ class Coordinator {
                 oss << fixed << setprecision(2); 
                 oss << "Transaction: $" << amount << endl;
                 oss << "\tFrom: " << accFrom << endl;
-                oss << "\tTo: " << accTo << endl;
+                oss << "\tTo: " << accTo;
                 return oss.str();
             }
         };
