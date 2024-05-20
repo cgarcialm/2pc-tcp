@@ -26,12 +26,17 @@ int main(int argc, char *argv[]) {
     string host2 = argv[5];
     int port2 = process_port(argv[6]);
 
-    Coordinator coordinator(logFile, 
-        host1, (u_short) port1, 
-        host2, (u_short) port2
-    );
-    coordinator.log(t.to_string());
-    coordinator.perform_transaction(t);
+    try {
+        Coordinator coordinator(logFile, 
+            host1, (u_short) port1, 
+            host2, (u_short) port2
+        );
+        coordinator.log(t.to_string());
+        coordinator.perform_transaction(t);
+    } catch (const exception &e) {
+        cerr << "Exception: " << e.what() << endl;
+        return EXIT_FAILURE;
+    }
     
     return EXIT_SUCCESS;
 }
