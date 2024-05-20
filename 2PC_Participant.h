@@ -29,6 +29,17 @@ public:
         partLogger.log(msg);
     }
 
+    void serve() override {
+        while (should_continue()) {
+            TCPServer::serve();
+        }
+
+        string logMsg = "Committing transaction.";
+        log(logMsg);
+        commit_transaction();
+        update_accounts_file();
+    }
+
 protected:
     void start_client(const std::string &their_host, u_short their_port) override {
         string logMsg = "Accepting coordinator connection. State: " + state_to_string(state);
@@ -50,6 +61,7 @@ protected:
                 if (command == message_type_to_string(VOTEREQUEST)) {
                     bool approve = is_transaction_valid(tokens[1], stod(tokens[2])); 
                     if (approve) {
+                        t = Transaction {tokens[1], stod(tokens[2])};
                         response = message_type_to_string(VOTECOMMIT);
                         state = READY;
                         logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
@@ -73,28 +85,16 @@ protected:
                 logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
                 log(logMsg);
                 break;
-            case COMMIT:
-                response = message_type_to_string(ACK);
-                state = DONE;
-
-                logMsg = "Committing transaction.";
-                log(logMsg);
-                break;
             case ABORT:
                 response = message_type_to_string(ACK);
-                state = DONE;
                 break;
-            case DONE:
-                return false; // Close the connection
+            case COMMIT:
+                break;
         }
         
         respond(response);
 
-        if (state == DONE) {
-            return false; // Close the connection
-        }
-
-        return true; // Keep the connection open
+        return true;
     }
 
 private:
@@ -109,11 +109,21 @@ private:
         INIT,
         READY,
         COMMIT,
-        ABORT,
-        DONE
+        ABORT
     };
 
     State state;
+
+    struct Transaction {
+            string acc;
+            double amount;
+    };
+    
+    Transaction t;
+
+    bool should_continue() {
+        return state != COMMIT;
+    }
 
     unordered_map<string, double> readAccounts(const string &filename) {
         unordered_map<string, double> accounts;
@@ -146,7 +156,6 @@ private:
             case READY: return "READY";
             case COMMIT: return "COMMIT";
             case ABORT: return "ABORT";
-            case DONE: return "DONE";
             default: return "UNKNOWN";
         }
     }
@@ -168,5 +177,23 @@ private:
         } else {
             return false; // Account not found
         }
+    }
+
+    void commit_transaction() {
+        accounts[t.acc] = accounts[t.acc] - t.amount;
+    }
+
+    void update_accounts_file() {
+        ofstream file(accFile, ios::out | ios::trunc);
+
+        if (!file.is_open()) {
+            throw runtime_error("Unable to open account file for writing: " + accFile);
+        }
+
+        for (const auto &pair : accounts) {
+            file << pair.second << " " << pair.first << endl;
+        }
+
+        file.close();
     }
 };
