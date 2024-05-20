@@ -105,6 +105,16 @@ private:
     Log partLogger;
     unordered_map<string, double> accounts;
 
+    enum State {
+        INIT,
+        READY,
+        COMMIT,
+        ABORT,
+        DONE
+    };
+
+    State state;
+
     unordered_map<string, double> readAccounts(const string &filename) {
         unordered_map<string, double> accounts;
         ifstream file(filename);
@@ -129,16 +139,6 @@ private:
         file.close();
         return accounts;
     }
-
-    enum State {
-        INIT,
-        READY,
-        COMMIT,
-        ABORT,
-        DONE
-    };
-
-    State state;
 
     std::string state_to_string(State state) {
         switch (state) {
