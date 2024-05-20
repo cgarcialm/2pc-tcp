@@ -12,21 +12,6 @@ using namespace std;
 
 class Coordinator {
     public: 
-        struct Transaction {
-            string accFrom;
-            string accTo;
-            double amount;
-
-            string to_string() const {
-                ostringstream oss;
-                oss << fixed << setprecision(2); 
-                oss << "Transaction: $" << amount << endl;
-                oss << "\tFrom: " << accFrom << endl;
-                oss << "\tTo: " << accTo;
-                return oss.str();
-            }
-        };
-
         explicit Coordinator(
             const string &logfile,
             const string &server_host_one, u_short listening_port_one,
@@ -42,9 +27,10 @@ class Coordinator {
                 }
         }
 
-        void perform_transaction(const Transaction &request) {
-            string msg1 = prepare_message(VOTEREQUEST, request.accFrom, request.amount);
-            string msg2 = prepare_message(VOTEREQUEST, request.accTo, -request.amount);
+        void perform_transaction(const string &accFrom, const string &accTo, double amount) {
+            Transaction t {accFrom, accFrom, amount};
+            string msg1 = prepare_message(VOTEREQUEST, accFrom, amount);
+            string msg2 = prepare_message(VOTEREQUEST, accTo, - amount);
             state = WAIT;
 
             while (state != DONE) {
@@ -116,6 +102,14 @@ class Coordinator {
         };
 
         State state;
+
+        struct Transaction {
+            string accFrom;
+            string accTo;
+            double amount;
+        };
+
+        Transaction t;
 
         unique_ptr<TCPClient> connect_to_participant(const string &host, u_short port) {
             try {

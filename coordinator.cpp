@@ -19,7 +19,12 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Coordinator::Transaction t {argv[4], argv[7], atof(argv[1])};
+    ostringstream oss;
+    oss << fixed << setprecision(2); 
+    oss << "Transaction: $" << atof(argv[1]) << endl;
+    oss << "\tFrom: " << argv[4] << endl;
+    oss << "\tTo: " << argv[7];
+    cout << oss.str();
 
     string host1 = argv[2];
     int port1 = process_port(argv[3]);
@@ -31,8 +36,7 @@ int main(int argc, char *argv[]) {
             host1, (u_short) port1, 
             host2, (u_short) port2
         );
-        coordinator.log(t.to_string());
-        coordinator.perform_transaction(t);
+        coordinator.perform_transaction(argv[4], argv[7], atof(argv[1]));
     } catch (const exception &e) {
         cerr << "Exception: " << e.what() << endl;
         return EXIT_FAILURE;
