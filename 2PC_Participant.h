@@ -3,6 +3,7 @@
 #include "MessageTypes.h"
 
 #include <cstdlib>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -33,13 +34,17 @@ public:
         while (should_continue()) {
             TCPServer::serve();
         }
-
+        
+        ostringstream oss;
+        oss << fixed << setprecision(2); 
         if (state == COMMIT) {
-            string logMsg = "Committing transaction.";
-            log(logMsg);
+            oss << "Committing " << t.amount << " from account " << t.acc;
             commit_transaction();
             update_accounts_file();
+        } else {
+            oss << "Releasing hold from account: " << t.acc;
         }
+        log(oss.str());
     }
 
 protected:
@@ -71,8 +76,6 @@ protected:
                     } else {
                         response = message_type_to_string(VOTEABORT);
                         state = ABORT;
-                        logMsg = "Releasing hold from account: " + t.acc;
-                        log(logMsg);
                     }
                     logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
                     log(logMsg);
