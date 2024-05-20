@@ -34,10 +34,12 @@ public:
             TCPServer::serve();
         }
 
-        string logMsg = "Committing transaction.";
-        log(logMsg);
-        commit_transaction();
-        update_accounts_file();
+        if (state == COMMIT) {
+            string logMsg = "Committing transaction.";
+            log(logMsg);
+            commit_transaction();
+            update_accounts_file();
+        }
     }
 
 protected:
@@ -60,15 +62,17 @@ protected:
             case INIT:
                 if (command == message_type_to_string(VOTEREQUEST)) {
                     bool approve = is_transaction_valid(tokens[1], stod(tokens[2])); 
+                    t = Transaction {tokens[1], stod(tokens[2])};
                     if (approve) {
-                        t = Transaction {tokens[1], stod(tokens[2])};
                         response = message_type_to_string(VOTECOMMIT);
                         state = READY;
-                        logMsg = "Holding: " + tokens[2] + " from account " + tokens[1];
+                        logMsg = "Holding: " + to_string(t.amount) + " from account " + t.acc;
                         log(logMsg);
                     } else {
                         response = message_type_to_string(VOTEABORT);
                         state = ABORT;
+                        logMsg = "Releasing hold from account: " + t.acc;
+                        log(logMsg);
                     }
                     logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
                     log(logMsg);
@@ -122,7 +126,7 @@ private:
     Transaction t;
 
     bool should_continue() {
-        return state != COMMIT;
+        return state != COMMIT && state != ABORT;
     }
 
     unordered_map<string, double> readAccounts(const string &filename) {
