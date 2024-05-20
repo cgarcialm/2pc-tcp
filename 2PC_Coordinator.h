@@ -35,8 +35,8 @@ class Coordinator {
                 state(INIT) {
                 
                 try {
-                    connect_to_participant(server_host_one, listening_port_one);
-                    connect_to_participant(server_host_two, listening_port_two);
+                    client1 = connect_to_participant(server_host_one, listening_port_one);
+                    client2 = connect_to_participant(server_host_two, listening_port_two);
                 } catch (const exception &e) {
                     throw; 
                 }
@@ -117,17 +117,17 @@ class Coordinator {
 
         State state;
 
-        void connect_to_participant(const string &host, u_short port) {
+        unique_ptr<TCPClient> connect_to_participant(const string &host, u_short port) {
             try {
-                client1 = make_unique<TCPClient>(host, port);
+                unique_ptr<TCPClient> client = make_unique<TCPClient>(host, port);
 
                 // Logging the connections
                 string connectMsg = "Connected to " + host + ":" + to_string(port);
                 log(connectMsg);
+
+                return client;
             } catch (const exception &e) {
-                string errorMsg = "Exception during connection initialization to " + host + ":" + to_string(port) + " - " + string(e.what());
-                log(errorMsg);
-                throw runtime_error(errorMsg); // Re-throw with detailed error message
+                throw runtime_error("Exception during connection initialization to " + host + ":" + to_string(port) + " - " + string(e.what()));
             }
         }
 
