@@ -83,22 +83,20 @@ protected:
                 break;
             case READY:
                 if (command == message_type_to_string(GLOBALABORT)) {
-                    response = message_type_to_string(ACK);
                     state = ABORT;
                 } else if (command == message_type_to_string(GLOBALCOMMIT)) {
-                    response = message_type_to_string(ACK);
                     state = COMMIT;
                 }
+                response = message_type_to_string(ACK);
                 logMsg = "Got " + command + ", replying " + response + ". State: " + state_to_string(state);
                 log(logMsg);
                 break;
             case ABORT:
-                response = message_type_to_string(ACK);
                 break;
             case COMMIT:
                 break;
         }
-        
+
         respond(response);
 
         return true;

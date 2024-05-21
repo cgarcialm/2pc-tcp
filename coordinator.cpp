@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     oss << fixed << setprecision(2); 
     oss << "Transaction: $" << atof(argv[1]) << endl;
     oss << "\tFrom: " << argv[4] << endl;
-    oss << "\tTo: " << argv[7];
+    oss << "\tTo: " << argv[7] << endl;
     cout << oss.str();
 
     string host1 = argv[2];

@@ -33,38 +33,49 @@ class Coordinator {
             string msg2 = prepare_message(VOTEREQUEST, accTo, - amount);
             state = WAIT;
 
-            while (state != DONE) {
+            bool client1VotedCommit = false;
+            bool client2VotedCommit = false;
+            while (state != INIT) {
                 string rcvMsg1 = send_message(*client1, msg1);
                 string rcvMsg2 = send_message(*client2, msg2);
                 switch (state) {
                     case WAIT:
-                        if (rcvMsg1 == message_type_to_string(VOTECOMMIT) 
-                        && rcvMsg2 == message_type_to_string(VOTECOMMIT)) {
+                        if (rcvMsg1 == message_type_to_string(VOTECOMMIT)) {
+                            client1VotedCommit = true;
+                        }
+                        if (rcvMsg2 == message_type_to_string(VOTECOMMIT)) {
+                            client1VotedCommit = true;
+                        }
+                        if (client1VotedCommit && client2VotedCommit) {
                             msg1 = message_type_to_string(GLOBALCOMMIT);
                             msg2 = message_type_to_string(GLOBALCOMMIT);
                             state = COMMIT;
                         } else {
-                            msg1 = message_type_to_string(GLOBALABORT);
-                            msg2 = message_type_to_string(GLOBALABORT);
+                            if (client1VotedCommit) {
+                                msg1 = message_type_to_string(GLOBALABORT);
+                            }
+                            if (client2VotedCommit) {
+                                msg2 = message_type_to_string(GLOBALABORT);
+                            }
                             state = ABORT;
                         }
                         break;
+                        
                     case COMMIT:
-                        if (rcvMsg1 == message_type_to_string(ACK) 
-                        && rcvMsg2 == message_type_to_string(ACK)) {
-                            state = DONE;
+                        if (rcvMsg1 == message_type_to_string(ACK) && rcvMsg2 == message_type_to_string(ACK)) {
+                            state = INIT;
                         } else {
                             state = ABORT;
                         }
                         break;
+
                     case ABORT:
-                        if (rcvMsg1 == message_type_to_string(ACK) 
-                        && rcvMsg2 == message_type_to_string(ACK)) {
-                            state = DONE;
+                        if (rcvMsg1 == message_type_to_string(ACK) && rcvMsg2 == message_type_to_string(ACK)) {
+                            state = INIT;
                         }
                         break;
+
                     case INIT:
-                    case DONE:
                         break;
                 }
             }
@@ -97,8 +108,7 @@ class Coordinator {
             INIT,
             WAIT,
             COMMIT,
-            ABORT,
-            DONE
+            ABORT
         };
 
         State state;
