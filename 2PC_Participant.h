@@ -92,9 +92,9 @@ protected:
                 log(logMsg);
                 break;
             case ABORT:
-                break;
+                return false;
             case COMMIT:
-                break;
+                return false;
         }
 
         respond(response);

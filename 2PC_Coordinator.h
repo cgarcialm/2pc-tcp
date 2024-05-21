@@ -33,46 +33,48 @@ class Coordinator {
             string msg2 = prepare_message(VOTEREQUEST, accTo, - amount);
             state = WAIT;
 
-            bool client1VotedCommit = false;
-            bool client2VotedCommit = false;
+            bool client1VotedAbort = false;
+            bool client2VotedAbort = false;
+            string rcvMsg1;
+            string rcvMsg2;
+
             while (state != INIT) {
-                string rcvMsg1 = send_message(*client1, msg1);
-                string rcvMsg2 = send_message(*client2, msg2);
+                if (!client1VotedAbort) {
+                    rcvMsg1 = send_message(*client1, msg1);
+                }
+                if (!client2VotedAbort) {
+                    rcvMsg2 = send_message(*client2, msg2);
+                }
                 switch (state) {
                     case WAIT:
-                        if (rcvMsg1 == message_type_to_string(VOTECOMMIT)) {
-                            client1VotedCommit = true;
+                        if (rcvMsg1 == message_type_to_string(VOTEABORT)) {
+                            client1VotedAbort = true;
                         }
-                        if (rcvMsg2 == message_type_to_string(VOTECOMMIT)) {
-                            client1VotedCommit = true;
+                        if (rcvMsg2 == message_type_to_string(VOTEABORT)) {
+                            client2VotedAbort = true;
                         }
-                        if (client1VotedCommit && client2VotedCommit) {
+
+                        if (!client1VotedAbort && !client2VotedAbort) {
                             msg1 = message_type_to_string(GLOBALCOMMIT);
                             msg2 = message_type_to_string(GLOBALCOMMIT);
                             state = COMMIT;
                         } else {
-                            if (client1VotedCommit) {
-                                msg1 = message_type_to_string(GLOBALABORT);
-                            }
-                            if (client2VotedCommit) {
-                                msg2 = message_type_to_string(GLOBALABORT);
-                            }
-                            state = ABORT;
-                        }
-                        break;
-                        
-                    case COMMIT:
-                        if (rcvMsg1 == message_type_to_string(ACK) && rcvMsg2 == message_type_to_string(ACK)) {
-                            state = INIT;
-                        } else {
+                            msg1 = message_type_to_string(GLOBALABORT);
+                            msg2 = message_type_to_string(GLOBALABORT);
                             state = ABORT;
                         }
                         break;
 
+                    case COMMIT:
+                        msg1 = message_type_to_string(ACK);
+                        msg2 = message_type_to_string(ACK);
+                        state = INIT;
+                        break;
+
                     case ABORT:
-                        if (rcvMsg1 == message_type_to_string(ACK) && rcvMsg2 == message_type_to_string(ACK)) {
-                            state = INIT;
-                        }
+                        msg1 = message_type_to_string(ACK);
+                        msg2 = message_type_to_string(ACK);
+                        state = INIT;
                         break;
 
                     case INIT:
